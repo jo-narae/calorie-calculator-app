@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>칼로리 계산기 — 디자인 시안 비교</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f0f0;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    color: #222;
+  }
+  .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 14px;
+  }
+  .mockup-section {
+    max-width: 420px;
+    margin: 0 auto 60px;
+  }
+  .mockup-label {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mockup-desc {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 16px;
+  }
+  .phone-frame {
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    position: relative;
+  }
+  .phone-frame::before {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 28px;
+    background: inherit;
+    border-radius: 0 0 16px 16px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+
+  /* ===== VARIANT A: Minimal Clean ===== */
+  .va { background: #ffffff; color: #1a1a1a; }
+  .va .phone-frame::before { background: #ffffff; }
+  .va .status-bar {
+    padding: 12px 20px 4px;
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: #999;
+  }
+  .va .header {
+    padding: 16px 20px 12px;
+    font-size: 13px; color: #999; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .va .comment-card {
+    margin: 0 16px 12px;
+    padding: 14px 18px;
+    background: #f8f8f8;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #555;
+    border-left: 3px solid #2196F3;
+  }
+  .va .main-card {
+    margin: 0 16px 12px;
+    padding: 24px 20px;
+    background: #fafafa;
+    border-radius: 16px;
+  }
+  .va .cal-label { font-size: 12px; color: #aaa; margin-bottom: 6px; }
+  .va .cal-number {
+    font-size: 56px; font-weight: 200; line-height: 1;
+    color: #1a1a1a; margin-bottom: 4px;
+  }
+  .va .cal-unit { font-size: 14px; color: #bbb; }
+  .va .cal-sub { font-size: 13px; color: #999; margin-top: 10px; }
+  .va .progress-track {
+    height: 6px; background: #eee; border-radius: 3px; margin-top: 14px; overflow: hidden;
+  }
+  .va .progress-fill {
+    height: 100%; width: 52%; background: #1a1a1a; border-radius: 3px;
+    transition: width 0.3s;
+  }
+  .va .cards-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 0 16px 12px;
+  }
+  .va .stat-card {
+    background: #fafafa; border-radius: 12px; padding: 16px;
+  }
+  .va .stat-card .stat-label { font-size: 11px; color: #aaa; margin-bottom: 4px; }
+  .va .stat-card .stat-value { font-size: 24px; font-weight: 300; }
+  .va .quick-section {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #fafafa; border-radius: 12px;
+  }
+  .va .quick-section .section-title {
+    font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .va .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .va .chip {
+    padding: 8px 14px; background: #fff; border: 1px solid #e0e0e0;
+    border-radius: 20px; font-size: 13px; color: #444;
+  }
+  .va .food-list {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #fafafa; border-radius: 12px;
+  }
+  .va .food-list .section-title {
+    font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .va .food-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .va .food-item:last-child { border-bottom: none; }
+  .va .food-name { font-size: 14px; color: #333; }
+  .va .food-cal { font-size: 14px; color: #999; }
+  .va .food-tag {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 8px; vertical-align: middle;
+  }
+  .va .tag-good { background: #4CAF50; }
+  .va .tag-bad { background: #f44336; }
+  .va .tag-normal { background: #ddd; }
+  .va .recommend-section {
+    margin: 0 16px 16px; padding: 14px 18px;
+    background: #fafafa; border-radius: 12px;
+  }
+  .va .recommend-section .section-title {
+    font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .va .rec-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; margin-bottom: 6px;
+    background: #fff; border-radius: 10px;
+  }
+  .va .rec-name { font-size: 14px; }
+  .va .rec-cal { font-size: 13px; color: #999; }
+  .va .bottom-bar {
+    display: flex; justify-content: center; padding: 12px 0 20px;
+  }
+  .va .add-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #1a1a1a; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 300;
+  }
+
+  /* ===== VARIANT B: Cheerful Healthy ===== */
+  .vb { background: #fffdf7; color: #2d2d2d; }
+  .vb .phone-frame::before { background: #fffdf7; }
+  .vb .status-bar {
+    padding: 12px 20px 4px;
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: #bba;
+  }
+  .vb .header {
+    padding: 16px 20px 8px;
+    font-size: 18px; font-weight: 700; color: #2d2d2d;
+  }
+  .vb .header span { color: #FF9800; }
+  .vb .comment-card {
+    margin: 8px 16px 12px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #FFF8E1, #F1F8E9);
+    border-radius: 16px;
+    font-size: 14px; color: #5d4e37;
+  }
+  .vb .comment-card .emoji { font-size: 18px; margin-right: 6px; }
+  .vb .main-card {
+    margin: 0 16px 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+    border-radius: 20px;
+    text-align: center;
+  }
+  .vb .cal-label { font-size: 12px; color: #8a8; margin-bottom: 4px; }
+  .vb .cal-ring {
+    position: relative; width: 160px; height: 160px; margin: 0 auto 10px;
+  }
+  .vb .cal-ring svg { transform: rotate(-90deg); }
+  .vb .cal-ring-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .vb .cal-number {
+    font-size: 44px; font-weight: 800; color: #4CAF50; line-height: 1;
+  }
+  .vb .cal-unit { font-size: 12px; color: #9a9; }
+  .vb .progress-track {
+    height: 10px; background: #e8e4d9; border-radius: 5px; margin: 8px 20px 0; overflow: hidden;
+  }
+  .vb .progress-fill {
+    height: 100%; width: 52%; border-radius: 5px;
+    background: linear-gradient(90deg, #66BB6A, #FFA726);
+  }
+  .vb .cal-sub { font-size: 13px; color: #998; margin-top: 8px; }
+  .vb .cards-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 0 16px 12px;
+  }
+  .vb .stat-card {
+    background: #fff; border-radius: 16px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .vb .stat-card .stat-icon { font-size: 20px; margin-bottom: 4px; }
+  .vb .stat-card .stat-label { font-size: 11px; color: #bba; margin-bottom: 2px; }
+  .vb .stat-card .stat-value { font-size: 22px; font-weight: 700; color: #4CAF50; }
+  .vb .stat-card .stat-value.orange { color: #FF9800; }
+  .vb .quick-section {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .vb .quick-section .section-title {
+    font-size: 13px; font-weight: 700; color: #4CAF50;
+    margin-bottom: 10px;
+  }
+  .vb .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .vb .chip {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #E8F5E9, #FFF8E1);
+    border: none; border-radius: 20px;
+    font-size: 13px; color: #555;
+  }
+  .vb .food-list {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .vb .food-list .section-title {
+    font-size: 13px; font-weight: 700; color: #FF9800;
+    margin-bottom: 12px;
+  }
+  .vb .food-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f0e8;
+  }
+  .vb .food-item:last-child { border-bottom: none; }
+  .vb .food-name { font-size: 14px; color: #444; }
+  .vb .food-cal { font-size: 14px; color: #bba; font-weight: 600; }
+  .vb .food-tag {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 8px;
+  }
+  .vb .tag-good { background: #66BB6A; }
+  .vb .tag-bad { background: #EF5350; }
+  .vb .tag-normal { background: #ddd; }
+  .vb .recommend-section {
+    margin: 0 16px 16px; padding: 14px 18px;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .vb .recommend-section .section-title {
+    font-size: 13px; font-weight: 700; color: #66BB6A;
+    margin-bottom: 12px;
+  }
+  .vb .rec-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; margin-bottom: 6px;
+    background: linear-gradient(135deg, #F1F8E9, #FFFDE7);
+    border-radius: 12px;
+  }
+  .vb .rec-name { font-size: 14px; }
+  .vb .rec-cal { font-size: 13px; color: #8a8; font-weight: 600; }
+  .vb .bottom-bar {
+    display: flex; justify-content: center; padding: 12px 0 20px;
+  }
+  .vb .add-btn {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #66BB6A, #FFA726);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 700;
+    box-shadow: 0 4px 16px rgba(102,187,106,0.4);
+  }
+
+  /* ===== VARIANT C: Dark Modern ===== */
+  .vc { background: #0d0d0d; color: #e0e0e0; }
+  .vc .phone-frame::before { background: #0d0d0d; }
+  .vc .status-bar {
+    padding: 12px 20px 4px;
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: #555;
+  }
+  .vc .header {
+    padding: 16px 20px 8px;
+    font-size: 15px; color: #666; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .vc .comment-card {
+    margin: 8px 16px 12px;
+    padding: 14px 18px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    font-size: 14px; color: #aaa;
+    border-left: 3px solid #00E676;
+  }
+  .vc .main-card {
+    margin: 0 16px 12px;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #1a1a1a, #111);
+    border-radius: 16px;
+    border: 1px solid #222;
+  }
+  .vc .cal-label { font-size: 11px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .vc .cal-number {
+    font-size: 60px; font-weight: 700; line-height: 1;
+    background: linear-gradient(135deg, #00E676, #00BCD4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .vc .cal-unit { font-size: 14px; color: #444; }
+  .vc .cal-sub { font-size: 13px; color: #555; margin-top: 10px; }
+  .vc .progress-track {
+    height: 4px; background: #222; border-radius: 2px; margin-top: 14px; overflow: hidden;
+  }
+  .vc .progress-fill {
+    height: 100%; width: 52%; border-radius: 2px;
+    background: linear-gradient(90deg, #00E676, #00BCD4);
+  }
+  .vc .cards-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin: 0 16px 12px;
+  }
+  .vc .stat-card {
+    background: #1a1a1a; border-radius: 12px; padding: 16px;
+    border: 1px solid #222;
+  }
+  .vc .stat-card .stat-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .vc .stat-card .stat-value { font-size: 24px; font-weight: 600; color: #00E676; }
+  .vc .stat-card .stat-value.cyan { color: #00BCD4; }
+  .vc .quick-section {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #1a1a1a; border-radius: 12px;
+    border: 1px solid #222;
+  }
+  .vc .quick-section .section-title {
+    font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .vc .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .vc .chip {
+    padding: 8px 14px;
+    background: #222; border: 1px solid #333;
+    border-radius: 20px; font-size: 13px; color: #aaa;
+  }
+  .vc .food-list {
+    margin: 0 16px 12px; padding: 14px 18px;
+    background: #1a1a1a; border-radius: 12px;
+    border: 1px solid #222;
+  }
+  .vc .food-list .section-title {
+    font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .vc .food-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #1f1f1f;
+  }
+  .vc .food-item:last-child { border-bottom: none; }
+  .vc .food-name { font-size: 14px; color: #ccc; }
+  .vc .food-cal { font-size: 14px; color: #555; }
+  .vc .food-tag {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 8px;
+  }
+  .vc .tag-good { background: #00E676; }
+  .vc .tag-bad { background: #FF5252; }
+  .vc .tag-normal { background: #444; }
+  .vc .recommend-section {
+    margin: 0 16px 16px; padding: 14px 18px;
+    background: #1a1a1a; border-radius: 12px;
+    border: 1px solid #222;
+  }
+  .vc .recommend-section .section-title {
+    font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .vc .rec-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; margin-bottom: 6px;
+    background: #222; border-radius: 10px;
+  }
+  .vc .rec-name { font-size: 14px; color: #ccc; }
+  .vc .rec-cal { font-size: 13px; color: #00E676; }
+  .vc .bottom-bar {
+    display: flex; justify-content: center; padding: 12px 0 20px;
+  }
+  .vc .add-btn {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #00E676, #00BCD4);
+    color: #0d0d0d;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700;
+    box-shadow: 0 4px 20px rgba(0,230,118,0.3);
+  }
+
+  /* ===== Comparison table ===== */
+  .comparison {
+    max-width: 700px; margin: 40px auto 60px;
+    background: #fff; border-radius: 16px; padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .comparison h2 { font-size: 18px; margin-bottom: 16px; text-align: center; }
+  .comparison table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .comparison th { text-align: left; padding: 10px; border-bottom: 2px solid #eee; color: #666; }
+  .comparison td { padding: 10px; border-bottom: 1px solid #f0f0f0; }
+  .comparison tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+
+<h1>칼로리 계산기 — 디자인 시안 비교</h1>
+<p class="subtitle">3개 시안을 스크롤하며 비교해보세요. 카드 보드 레이아웃 + 큰 숫자 프로그레스 바 공통 적용.</p>
+
+<!-- ===== VARIANT A: Minimal Clean ===== -->
+<div class="mockup-section">
+  <div class="mockup-label">시안 A — 미니멀 클린</div>
+  <div class="mockup-desc">절제된 흰 배경, 가벼운 서체, 숫자가 주인공. 무인양품 느낌.</div>
+  <div class="phone-frame va">
+    <div class="status-bar"><span>9:41</span><span>100%</span></div>
+    <div class="header">CALORIE TRACKER</div>
+    <div class="comment-card">잘하고 있어요, 저녁은 가볍게!</div>
+    <div class="main-card">
+      <div class="cal-label">남은 칼로리</div>
+      <div class="cal-number">790</div>
+      <div class="cal-unit">kcal remaining</div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <div class="cal-sub">860 / 1,650 kcal 섭취</div>
+    </div>
+    <div class="cards-row">
+      <div class="stat-card">
+        <div class="stat-label">목표</div>
+        <div class="stat-value">1,650</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">섭취</div>
+        <div class="stat-value">860</div>
+      </div>
+    </div>
+    <div class="quick-section">
+      <div class="section-title">빠른 추가</div>
+      <div class="chip-row">
+        <div class="chip">밥 한 공기 +300</div>
+        <div class="chip">계란 1개 +80</div>
+        <div class="chip">우유 +130</div>
+      </div>
+    </div>
+    <div class="food-list">
+      <div class="section-title">오늘 먹은 것</div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>잡곡밥</span>
+        <span class="food-cal">340 kcal</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>된장찌개</span>
+        <span class="food-cal">120 kcal</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>닭가슴살 샐러드</span>
+        <span class="food-cal">280 kcal</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>아메리카노</span>
+        <span class="food-cal">10 kcal</span>
+      </div>
+    </div>
+    <div class="recommend-section">
+      <div class="section-title">추천 음식 (790kcal 이내)</div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>그릭요거트</span>
+        <span class="rec-cal">130 kcal</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>연어 포케</span>
+        <span class="rec-cal">450 kcal</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>고구마 1개</span>
+        <span class="rec-cal">140 kcal</span>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="add-btn">+</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VARIANT B: Cheerful Healthy ===== -->
+<div class="mockup-section">
+  <div class="mockup-label">시안 B — 명랑 헬시</div>
+  <div class="mockup-desc">연두+오렌지 그라데이션, 둥근 모서리, 이모지 포인트. 건강한 에너지.</div>
+  <div class="phone-frame vb">
+    <div class="status-bar"><span>9:41</span><span>100%</span></div>
+    <div class="header">오늘의 <span>칼로리</span></div>
+    <div class="comment-card"><span class="emoji">💪</span> 잘하고 있어요, 저녁은 가볍게!</div>
+    <div class="main-card">
+      <div class="cal-label">남은 칼로리</div>
+      <div class="cal-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="70" fill="none" stroke="#e0e0d0" stroke-width="10"/>
+          <circle cx="80" cy="80" r="70" fill="none" stroke="url(#grad-b)" stroke-width="10"
+                  stroke-dasharray="440" stroke-dashoffset="211" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="grad-b" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#66BB6A"/>
+              <stop offset="100%" stop-color="#FFA726"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="cal-ring-text">
+          <div class="cal-number">790</div>
+          <div class="cal-unit">kcal 남음</div>
+        </div>
+      </div>
+      <div class="cal-sub">860 / 1,650 kcal 섭취</div>
+    </div>
+    <div class="cards-row">
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-label">목표</div>
+        <div class="stat-value orange">1,650</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🍽️</div>
+        <div class="stat-label">섭취</div>
+        <div class="stat-value">860</div>
+      </div>
+    </div>
+    <div class="quick-section">
+      <div class="section-title">⚡ 빠른 추가</div>
+      <div class="chip-row">
+        <div class="chip">🍚 밥 +300</div>
+        <div class="chip">🥚 계란 +80</div>
+        <div class="chip">🥛 우유 +130</div>
+      </div>
+    </div>
+    <div class="food-list">
+      <div class="section-title">🍴 오늘 먹은 것</div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>잡곡밥</span>
+        <span class="food-cal">340</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>된장찌개</span>
+        <span class="food-cal">120</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>닭가슴살 샐러드</span>
+        <span class="food-cal">280</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>아메리카노</span>
+        <span class="food-cal">10</span>
+      </div>
+    </div>
+    <div class="recommend-section">
+      <div class="section-title">🌿 추천 음식</div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>그릭요거트</span>
+        <span class="rec-cal">130 kcal</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>연어 포케</span>
+        <span class="rec-cal">450 kcal</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>고구마 1개</span>
+        <span class="rec-cal">140 kcal</span>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="add-btn">+</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VARIANT C: Dark Modern ===== -->
+<div class="mockup-section">
+  <div class="mockup-label">시안 C — 다크 모던</div>
+  <div class="mockup-desc">블랙 배경, 네온 그린+시안 포인트, 날카로운 타이포. 피트니스 앱 느낌.</div>
+  <div class="phone-frame vc">
+    <div class="status-bar"><span>9:41</span><span>100%</span></div>
+    <div class="header">CALORIE</div>
+    <div class="comment-card">잘하고 있어요, 저녁은 가볍게!</div>
+    <div class="main-card">
+      <div class="cal-label">Remaining</div>
+      <div class="cal-number">790</div>
+      <div class="cal-unit">kcal</div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <div class="cal-sub">860 / 1,650 kcal consumed</div>
+    </div>
+    <div class="cards-row">
+      <div class="stat-card">
+        <div class="stat-label">Target</div>
+        <div class="stat-value cyan">1,650</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Intake</div>
+        <div class="stat-value">860</div>
+      </div>
+    </div>
+    <div class="quick-section">
+      <div class="section-title">Quick Add</div>
+      <div class="chip-row">
+        <div class="chip">밥 +300</div>
+        <div class="chip">계란 +80</div>
+        <div class="chip">우유 +130</div>
+      </div>
+    </div>
+    <div class="food-list">
+      <div class="section-title">Today</div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>잡곡밥</span>
+        <span class="food-cal">340</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>된장찌개</span>
+        <span class="food-cal">120</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-good"></span>닭가슴살 샐러드</span>
+        <span class="food-cal">280</span>
+      </div>
+      <div class="food-item">
+        <span class="food-name"><span class="food-tag tag-normal"></span>아메리카노</span>
+        <span class="food-cal">10</span>
+      </div>
+    </div>
+    <div class="recommend-section">
+      <div class="section-title">Recommended</div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>그릭요거트</span>
+        <span class="rec-cal">130</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>연어 포케</span>
+        <span class="rec-cal">450</span>
+      </div>
+      <div class="rec-item">
+        <span class="rec-name"><span class="food-tag tag-good"></span>고구마 1개</span>
+        <span class="rec-cal">140</span>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="add-btn">+</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Comparison Table ===== -->
+<div class="comparison">
+  <h2>시안 비교표</h2>
+  <table>
+    <tr>
+      <th></th>
+      <th>A. 미니멀 클린</th>
+      <th>B. 명랑 헬시</th>
+      <th>C. 다크 모던</th>
+    </tr>
+    <tr>
+      <td><strong>철학</strong></td>
+      <td>정보를 비운다. 숫자가 말한다.</td>
+      <td>건강은 즐거운 것. 컬러로 응원한다.</td>
+      <td>몰입과 집중. 어둠 속 데이터가 빛난다.</td>
+    </tr>
+    <tr>
+      <td><strong>컬러</strong></td>
+      <td>흰+회색, 블랙 포인트</td>
+      <td>연두+오렌지 그라데이션</td>
+      <td>블랙+네온 그린/시안</td>
+    </tr>
+    <tr>
+      <td><strong>칼로리 표현</strong></td>
+      <td>큰 숫자 + 가는 바</td>
+      <td>원형 링 + 굵은 바</td>
+      <td>그라데이션 숫자 + 날카로운 바</td>
+    </tr>
+    <tr>
+      <td><strong>카드 스타일</strong></td>
+      <td>플랫, 경계선 없음</td>
+      <td>둥근 그림자, 따뜻한 배경</td>
+      <td>다크 카드, 1px 보더</td>
+    </tr>
+    <tr>
+      <td><strong>강점</strong></td>
+      <td>눈 피로도 낮음, 정보 집중</td>
+      <td>친근함, 동기 부여, 이모지</td>
+      <td>몰입감, 트렌디, 야간 사용</td>
+    </tr>
+    <tr>
+      <td><strong>약점</strong></td>
+      <td>다소 건조, 재미 부족</td>
+      <td>색상 과하면 산만할 수 있음</td>
+      <td>밝은 환경에서 가독성 약간 떨어짐</td>
+    </tr>
+    <tr>
+      <td><strong>주 타깃</strong></td>
+      <td>지영 (빠르고 깔끔하게)</td>
+      <td>상훈 (친근하고 가이드)</td>
+      <td>지영 (트렌디한 피트니스)</td>
+    </tr>
+  </table>
+</div>
+
+</body>
+</html>
