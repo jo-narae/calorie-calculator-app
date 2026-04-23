@@ -5,29 +5,27 @@ function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-// 기기별 고유 ID (익명 사용자 구분)
-function getDeviceId(): string {
-  if (typeof window === 'undefined') return '';
-  let id = localStorage.getItem('calorie-device-id');
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem('calorie-device-id', id);
-  }
-  return id;
+async function getUserId(): Promise<string | null> {
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id ?? null;
 }
 
 // ===== Profile =====
 
 export async function loadProfile(): Promise<UserProfile | null> {
-  const deviceId = getDeviceId();
-  if (!deviceId) return null;
+  const userId = await getUserId();
+  if (!userId) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('device_id', deviceId)
-    .single();
+    .eq('user_id', userId)
+    .maybeSingle();
 
+  if (error) {
+    console.error('loadProfile failed:', error);
+    return null;
+  }
   if (!data) return null;
 
   return {
@@ -41,12 +39,16 @@ export async function loadProfile(): Promise<UserProfile | null> {
 }
 
 export async function saveProfile(profile: UserProfile): Promise<void> {
-  const deviceId = getDeviceId();
+  const userId = await getUserId();
+  if (!userId) {
+    console.error('saveProfile: no signed-in user');
+    return;
+  }
 
-  await supabase
+  const { error } = await supabase
     .from('profiles')
     .upsert({
-      device_id: deviceId,
+      user_id: userId,
       height: profile.height,
       weight: profile.weight,
       age: profile.age,
@@ -54,28 +56,36 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
       activity: profile.activity,
       tdee: profile.tdee,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'device_id' });
+    }, { onConflict: 'user_id' });
+
+  if (error) {
+    console.error('saveProfile failed:', error);
+  }
 }
 
 // ===== Food Records =====
 
 export async function loadDailyData(targetCalories: number): Promise<DailyData> {
-  const deviceId = getDeviceId();
+  const userId = await getUserId();
   const today = getToday();
 
-  if (!deviceId) {
+  if (!userId) {
     return { date: today, targetCalories, records: [] };
   }
 
-  // 어제 데이터가 있으면 요약 저장 (날짜 변경 처리)
-  await checkAndSaveDaySummary(deviceId, today, targetCalories);
+  await checkAndSaveDaySummary(userId, today, targetCalories);
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('food_records')
     .select('*')
-    .eq('device_id', deviceId)
+    .eq('user_id', userId)
     .eq('date', today)
     .order('added_at', { ascending: true });
+
+  if (error) {
+    console.error('loadDailyData failed:', error);
+    return { date: today, targetCalories, records: [] };
+  }
 
   const records: FoodRecord[] = (data || []).map((row) => ({
     id: row.id,
@@ -90,42 +100,38 @@ export async function loadDailyData(targetCalories: number): Promise<DailyData> 
 }
 
 async function checkAndSaveDaySummary(
-  deviceId: string,
+  userId: string,
   today: string,
   targetCalories: number
 ): Promise<void> {
-  // 어제 날짜 계산
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
-  // 어제 요약이 이미 있는지 확인
   const { data: existingSummary } = await supabase
     .from('day_summaries')
     .select('id')
-    .eq('device_id', deviceId)
+    .eq('user_id', userId)
     .eq('date', yesterdayStr)
-    .single();
+    .maybeSingle();
 
-  if (existingSummary) return; // 이미 저장됨
+  if (existingSummary) return;
 
-  // 어제 기록이 있는지 확인
   const { data: yesterdayRecords } = await supabase
     .from('food_records')
     .select('*')
-    .eq('device_id', deviceId)
+    .eq('user_id', userId)
     .eq('date', yesterdayStr);
 
   if (!yesterdayRecords || yesterdayRecords.length === 0) return;
 
-  // 어제 요약 생성
   const total = yesterdayRecords.reduce((sum, r) => sum + r.calories, 0);
   const highest = yesterdayRecords.reduce((max, r) =>
     r.calories > max.calories ? r : max
   ).food_name;
 
   await supabase.from('day_summaries').insert({
-    device_id: deviceId,
+    user_id: userId,
     date: yesterdayStr,
     target_calories: targetCalories,
     total_calories: total,
@@ -136,24 +142,32 @@ async function checkAndSaveDaySummary(
 }
 
 export async function saveDailyData(_data: DailyData): Promise<void> {
-  // Supabase에서는 개별 레코드 단위로 저장하므로 별도 작업 불필요
+  // Supabase는 레코드 단위로 저장하므로 별도 작업 불필요
 }
 
 export async function addFoodRecord(
   data: DailyData,
   record: FoodRecord
 ): Promise<DailyData> {
-  const deviceId = getDeviceId();
+  const userId = await getUserId();
+  if (!userId) {
+    console.error('addFoodRecord: no signed-in user');
+    return data;
+  }
 
-  await supabase.from('food_records').insert({
+  const { error } = await supabase.from('food_records').insert({
     id: record.id,
-    device_id: deviceId,
+    user_id: userId,
     date: data.date,
     food_name: record.foodName,
     calories: record.calories,
     tag: record.tag,
     source: record.source,
   });
+
+  if (error) {
+    console.error('addFoodRecord failed:', error);
+  }
 
   return { ...data, records: [...data.records, record] };
 }
@@ -162,7 +176,14 @@ export async function removeFoodRecord(
   data: DailyData,
   recordId: string
 ): Promise<DailyData> {
-  await supabase.from('food_records').delete().eq('id', recordId);
+  const { error } = await supabase
+    .from('food_records')
+    .delete()
+    .eq('id', recordId);
+
+  if (error) {
+    console.error('removeFoodRecord failed:', error);
+  }
 
   return {
     ...data,
@@ -173,20 +194,24 @@ export async function removeFoodRecord(
 // ===== Day Summary =====
 
 export async function loadYesterdaySummary(): Promise<DaySummary | null> {
-  const deviceId = getDeviceId();
-  if (!deviceId) return null;
+  const userId = await getUserId();
+  if (!userId) return null;
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('day_summaries')
     .select('*')
-    .eq('device_id', deviceId)
+    .eq('user_id', userId)
     .eq('date', yesterdayStr)
-    .single();
+    .maybeSingle();
 
+  if (error) {
+    console.error('loadYesterdaySummary failed:', error);
+    return null;
+  }
   if (!data) return null;
 
   return {
@@ -200,7 +225,9 @@ export async function loadYesterdaySummary(): Promise<DaySummary | null> {
 }
 
 export async function clearYesterdaySummary(): Promise<void> {
-  const deviceId = getDeviceId();
+  const userId = await getUserId();
+  if (!userId) return;
+
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
@@ -208,6 +235,6 @@ export async function clearYesterdaySummary(): Promise<void> {
   await supabase
     .from('day_summaries')
     .delete()
-    .eq('device_id', deviceId)
+    .eq('user_id', userId)
     .eq('date', yesterdayStr);
 }

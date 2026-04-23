@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from 'react';
 import { UserProfile, DailyData, DaySummary, FoodRecord, HealthTag } from '@/types';
+import { supabase } from '@/lib/supabase';
 import {
   loadProfile,
   saveProfile,
@@ -44,7 +45,7 @@ export function CalorieProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    async function init() {
+    async function loadAll() {
       const savedProfile = await loadProfile();
       setProfileState(savedProfile);
 
@@ -57,7 +58,19 @@ export function CalorieProvider({ children }: { children: ReactNode }) {
 
       setIsLoaded(true);
     }
-    init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+        loadAll();
+      }
+      if (event === 'SIGNED_OUT') {
+        setProfileState(null);
+        setDailyData({ date: '', targetCalories: 0, records: [] });
+        setYesterdaySummary(null);
+        setIsLoaded(true);
+      }
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const totalCalories = dailyData.records.reduce(
