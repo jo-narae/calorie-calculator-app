@@ -60,9 +60,22 @@ export default function Home() {
     <div className="flex flex-col flex-1 bg-bg-primary pb-24">
       <div className="w-full max-w-md mx-auto px-4 py-6 space-y-4">
         {/* 헤더 */}
-        <h1 className="text-lg font-bold text-text-primary">
-          오늘의 <span className="text-orange-dark">칼로리</span>
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold text-text-primary">
+            오늘의 <span className="text-orange-dark">칼로리</span>
+          </h1>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-xs text-text-muted px-2 py-1 rounded-md active:scale-95 transition"
+          >
+            로그아웃
+          </button>
+        </div>
+        {session?.user.email && (
+          <p className="text-xs text-text-muted -mt-2">
+            {session.user.email}
+          </p>
+        )}
 
         {/* 어제 요약 */}
         {yesterdaySummary && (
