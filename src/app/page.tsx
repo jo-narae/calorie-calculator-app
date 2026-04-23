@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import { useCalorie } from '@/context/CalorieContext';
+import LoginScreen from '@/components/LoginScreen';
 import ProfileSetup from '@/components/ProfileSetup';
 import CalorieRing from '@/components/CalorieRing';
 import CommentCard from '@/components/CommentCard';
@@ -13,8 +16,33 @@ import DaySummaryCard from '@/components/DaySummaryCard';
 import AddFoodModal from '@/components/AddFoodModal';
 
 export default function Home() {
-  const { profile, isLoaded, dailyData, totalCalories, remainingCalories, yesterdaySummary, dismissYesterdaySummary } = useCalorie();
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { profile, isLoaded, dailyData, totalCalories, remainingCalories, yesterdaySummary, dismissYesterdaySummary } = useCalorie();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthReady(true);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  if (!authReady) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-bg-primary">
+        <p className="text-text-muted">로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LoginScreen />;
+  }
 
   if (!isLoaded) {
     return (
