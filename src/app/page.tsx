@@ -9,10 +9,11 @@ import StatCards from '@/components/StatCards';
 import QuickAddChips from '@/components/QuickAddChips';
 import FoodList from '@/components/FoodList';
 import RecommendSection from '@/components/RecommendSection';
+import DaySummaryCard from '@/components/DaySummaryCard';
 import AddFoodModal from '@/components/AddFoodModal';
 
 export default function Home() {
-  const { profile, isLoaded, dailyData, totalCalories, remainingCalories } = useCalorie();
+  const { profile, isLoaded, dailyData, totalCalories, remainingCalories, yesterdaySummary, dismissYesterdaySummary } = useCalorie();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!isLoaded) {
@@ -34,6 +35,14 @@ export default function Home() {
         <h1 className="text-lg font-bold text-text-primary">
           오늘의 <span className="text-orange-dark">칼로리</span>
         </h1>
+
+        {/* 어제 요약 */}
+        {yesterdaySummary && (
+          <DaySummaryCard
+            summary={yesterdaySummary}
+            onDismiss={dismissYesterdaySummary}
+          />
+        )}
 
         {/* 한 줄 코멘트 */}
         <CommentCard
